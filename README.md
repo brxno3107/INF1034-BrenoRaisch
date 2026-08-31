@@ -2,5 +2,5 @@
 
 Repositório criado para envio dos arquivos da disciplina INF1034 da PUC-Rio.
 
-Breno do Patrocínio Raisch
+Breno do Patrocínio Raisch\n
 Matrícula: 2110039
