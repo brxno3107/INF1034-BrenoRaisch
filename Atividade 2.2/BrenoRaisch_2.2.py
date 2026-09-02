@@ -4,7 +4,7 @@
 from turtle import *
 import math
 t = Turtle()
-t.speed(17)
+t.speed(3)
 larguraBandeira = 120
 alturaBandeira = 80
 espacoX = 20
