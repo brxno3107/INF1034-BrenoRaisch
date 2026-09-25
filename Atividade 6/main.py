@@ -3,7 +3,7 @@ import pygame
 #################################################################################################
 
 
-def caminho(nomeArquivo):
+def caminhoDoArquivo(nomeArquivo):
     posicao = max(__file__.rfind("\\"), __file__.rfind("/"))
     pasta = __file__[:posicao + 1] if posicao != -1 else ""
     return pasta + nomeArquivo
@@ -26,129 +26,129 @@ janela = "#0D1664"
 tronco = "#7A4A1E"
 copa = "#1E9E1E"
 preto = "#000000"
-solCor = "#FFF251"
+corDoSol = "#FFF251"
 #################################################################################################
-fonte = pygame.font.Font(caminho("batmfa__.ttf"), 60)
-ronaldo = pygame.image.load(caminho("Ronaldo.png")).convert_alpha()
+fonte = pygame.font.Font(caminhoDoArquivo("batmfa__.ttf"), 60)
+ronaldo = pygame.image.load(caminhoDoArquivo("Ronaldo.png")).convert_alpha()
 ronaldo = pygame.transform.scale(ronaldo, (150, 108))
 
 
-def gerarSfx(freq, duracao=0.35, volume=0.4, sampleRate=44100):
-    nSamples = int(sampleRate * duracao)
+def criarSom(frequencia, duracao=0.35, volume=0.4, taxaAmostragem=44100):
+    totalAmostras = int(taxaAmostragem * duracao)
     amplitude = int(32767 * volume)
-    fade = 0.05
-    buf = bytearray()
-    for i in range(nSamples):
-        t = i / sampleRate
-        envelope = min(1.0, (duracao - t) / fade) if t > duracao - fade else min(1.0, t / fade)
-        amostra = int(amplitude * envelope * math.sin(2 * math.pi * freq * t)) & 0xFFFF
-        baixo, alto = amostra & 0xFF, (amostra >> 8) & 0xFF
-        buf.append(baixo)
-        buf.append(alto)
-        buf.append(baixo)
-        buf.append(alto)
-    return pygame.mixer.Sound(buffer=bytes(buf))
+    tempoDeFade = 0.05
+    bytesDoSom = bytearray()
+    for indice in range(totalAmostras):
+        tempo = indice / taxaAmostragem
+        volumeNoInstante = min(1.0, (duracao - tempo) / tempoDeFade) if tempo > duracao - tempoDeFade else min(1.0, tempo / tempoDeFade)
+        amostra = int(amplitude * volumeNoInstante * math.sin(2 * math.pi * frequencia * tempo)) & 0xFFFF
+        byteBaixo, byteAlto = amostra & 0xFF, (amostra >> 8) & 0xFF
+        bytesDoSom.append(byteBaixo)
+        bytesDoSom.append(byteAlto)
+        bytesDoSom.append(byteBaixo)
+        bytesDoSom.append(byteAlto)
+    return pygame.mixer.Sound(buffer=bytes(bytesDoSom))
 
 
-sfxManha = gerarSfx(660)
-sfxTarde = gerarSfx(440)
-sfxNoite = gerarSfx(220, duracao=0.5, volume=0.3)
+somDaManha = criarSom(660)
+somDaTarde = criarSom(440)
+somDaNoite = criarSom(220, duracao=0.5, volume=0.3)
 #################################################################################################
-gramaY = 590
-larguraNuvem = 255
-velocidadeNuvem = 2.0
+alturaDoChao = 590
+larguraDaNuvem = 255
+velocidadeDaNuvem = 2.0
 nuvemX = 655.0
 nuvemY = 95
-raioNuvem = 45
-nuvemXMin = raioNuvem
-nuvemXMax = largura - (larguraNuvem - raioNuvem)
+raioDaNuvem = 45
+limiteEsquerdoNuvem = raioDaNuvem
+limiteDireitoNuvem = largura - (larguraDaNuvem - raioDaNuvem)
 #################################################################################################
 solX, solY = 130.0, 105.0
-raioSol = 50
-raioRaios = 95
-velSolTeclado = 260
-solXMin = raioRaios
-solXMax = largura - raioRaios
-solYMin = raioRaios
-solYMax = gramaY - raioRaios
+raioDoSol = 50
+alcanceDosRaios = 95
+velocidadeSolTeclado = 260
+limiteEsquerdoSol = alcanceDosRaios
+limiteDireitoSol = largura - alcanceDosRaios
+limiteSuperiorSol = alcanceDosRaios
+limiteInferiorSol = alturaDoChao - alcanceDosRaios
 #################################################################################################
 corTarde = (135, 206, 250)
 corManha = (255, 179, 126)
 corNoite = (11, 19, 65)
 
 
-def lerpCor(c1, c2, k):
-    return tuple(int(c1[i] + (c2[i] - c1[i]) * k) for i in range(3))
+def misturarCores(corInicial, corFinal, progresso):
+    return tuple(int(corInicial[i] + (corFinal[i] - corInicial[i]) * progresso) for i in range(3))
 
 
-def clamp(valor, minimo, maximo):
+def limitarEntre(valor, minimo, maximo):
     return max(minimo, min(maximo, valor))
 
 
-def corEEstagioDoCeu(solY):
-    t = clamp((solY - solYMin) / (solYMax - solYMin), 0.0, 1.0)
-    if t < 0.5:
-        cor = lerpCor(corTarde, corManha, t / 0.5)
-        estagio = "tarde" if t < 0.25 else "manha"
+def calcularCeuEEstagio(alturaDoSol):
+    progresso = limitarEntre((alturaDoSol - limiteSuperiorSol) / (limiteInferiorSol - limiteSuperiorSol), 0.0, 1.0)
+    if progresso < 0.5:
+        cor = misturarCores(corTarde, corManha, progresso / 0.5)
+        estagio = "tarde" if progresso < 0.25 else "manha"
     else:
-        cor = lerpCor(corManha, corNoite, (t - 0.5) / 0.5)
-        estagio = "manha" if t < 0.75 else "noite"
+        cor = misturarCores(corManha, corNoite, (progresso - 0.5) / 0.5)
+        estagio = "manha" if progresso < 0.75 else "noite"
     return cor, estagio
 
 
-sfxPorEstagio = {"manha": sfxManha, "tarde": sfxTarde, "noite": sfxNoite}
+sonsPorEstagio = {"manha": somDaManha, "tarde": somDaTarde, "noite": somDaNoite}
 #################################################################################################
 while running:
-    dt = clock.tick(60) / 1000
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    deltaTempo = clock.tick(60) / 1000
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
             running = False
-        if event.type == pygame.MOUSEMOTION:
-            solX, solY = event.pos
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            _, estagioAtual = corEEstagioDoCeu(solY)
-            sfxPorEstagio[estagioAtual].play()
+        if evento.type == pygame.MOUSEMOTION:
+            solX, solY = evento.pos
+        if evento.type == pygame.MOUSEBUTTONDOWN:
+            _, estagioAtual = calcularCeuEEstagio(solY)
+            sonsPorEstagio[estagioAtual].play()
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-        solX -= velSolTeclado * dt
-    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-        solX += velSolTeclado * dt
-    if keys[pygame.K_UP] or keys[pygame.K_w]:
-        solY -= velSolTeclado * dt
-    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-        solY += velSolTeclado * dt
+    teclas = pygame.key.get_pressed()
+    if teclas[pygame.K_LEFT] or teclas[pygame.K_a]:
+        solX -= velocidadeSolTeclado * deltaTempo
+    if teclas[pygame.K_RIGHT] or teclas[pygame.K_d]:
+        solX += velocidadeSolTeclado * deltaTempo
+    if teclas[pygame.K_UP] or teclas[pygame.K_w]:
+        solY -= velocidadeSolTeclado * deltaTempo
+    if teclas[pygame.K_DOWN] or teclas[pygame.K_s]:
+        solY += velocidadeSolTeclado * deltaTempo
 
-    solX = clamp(solX, solXMin, solXMax)
-    solY = clamp(solY, solYMin, solYMax)
+    solX = limitarEntre(solX, limiteEsquerdoSol, limiteDireitoSol)
+    solY = limitarEntre(solY, limiteSuperiorSol, limiteInferiorSol)
 
-    nuvemX += velocidadeNuvem
-    if nuvemX <= nuvemXMin:
-        nuvemX = nuvemXMin
-        velocidadeNuvem = abs(velocidadeNuvem)
-    elif nuvemX >= nuvemXMax:
-        nuvemX = nuvemXMax
-        velocidadeNuvem = -abs(velocidadeNuvem)
+    nuvemX += velocidadeDaNuvem
+    if nuvemX <= limiteEsquerdoNuvem:
+        nuvemX = limiteEsquerdoNuvem
+        velocidadeDaNuvem = abs(velocidadeDaNuvem)
+    elif nuvemX >= limiteDireitoNuvem:
+        nuvemX = limiteDireitoNuvem
+        velocidadeDaNuvem = -abs(velocidadeDaNuvem)
 
-    ceu, estagio = corEEstagioDoCeu(solY)
+    corDoCeu, estagioDoDia = calcularCeuEEstagio(solY)
 
-    screen.fill(ceu)
-    pygame.draw.rect(screen, grama, (0, gramaY, largura, altura - gramaY))
+    screen.fill(corDoCeu)
+    pygame.draw.rect(screen, grama, (0, alturaDoChao, largura, altura - alturaDoChao))
 
-    solCentro = (solX, solY)
+    centroDoSol = (solX, solY)
     for angulo in range(0, 360, 45):
         rad = math.radians(angulo)
-        x1 = solCentro[0] + math.cos(rad) * 55
-        y1 = solCentro[1] + math.sin(rad) * 55
-        x2 = solCentro[0] + math.cos(rad) * 95
-        y2 = solCentro[1] + math.sin(rad) * 95
-        pygame.draw.line(screen, solCor, (x1, y1), (x2, y2), 5)
-    pygame.draw.circle(screen, solCor, solCentro, raioSol)
+        x1 = centroDoSol[0] + math.cos(rad) * 55
+        y1 = centroDoSol[1] + math.sin(rad) * 55
+        x2 = centroDoSol[0] + math.cos(rad) * 95
+        y2 = centroDoSol[1] + math.sin(rad) * 95
+        pygame.draw.line(screen, corDoSol, (x1, y1), (x2, y2), 5)
+    pygame.draw.circle(screen, corDoSol, centroDoSol, raioDoSol)
 
-    pygame.draw.circle(screen, nuvem, (nuvemX, nuvemY), raioNuvem)
-    pygame.draw.circle(screen, nuvem, (nuvemX + 55, nuvemY), raioNuvem)
-    pygame.draw.circle(screen, nuvem, (nuvemX + 110, nuvemY), raioNuvem)
-    pygame.draw.circle(screen, nuvem, (nuvemX + 165, nuvemY), raioNuvem)
+    pygame.draw.circle(screen, nuvem, (nuvemX, nuvemY), raioDaNuvem)
+    pygame.draw.circle(screen, nuvem, (nuvemX + 55, nuvemY), raioDaNuvem)
+    pygame.draw.circle(screen, nuvem, (nuvemX + 110, nuvemY), raioDaNuvem)
+    pygame.draw.circle(screen, nuvem, (nuvemX + 165, nuvemY), raioDaNuvem)
 
     pygame.draw.rect(screen, tronco, (700, 475, 30, 115))
     pygame.draw.circle(screen, copa, (715, 375), 100)
