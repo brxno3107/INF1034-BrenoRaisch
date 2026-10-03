@@ -10,7 +10,6 @@ fonteTitulo = pygame.font.Font(None, 56)
 fonteGrande = pygame.font.Font(None, 90)
 fonteTexto = pygame.font.Font(None, 36)
 fonteMenor = pygame.font.Font(None, 28)
-
 corFundo = "#222831"
 corTexto = "#EEEEEE"
 corBotao = "#393E46"
@@ -20,10 +19,8 @@ corDestaque = "#FF9F1C"
 corMenor = "#2EC4B6"
 corMaior = "#E84855"
 corAcerto = "#00ADB5"
-
 MINIMO = 1
 MAXIMO = 1023
-
 estado = {
     "papel": None,
     "segredo": None,
@@ -37,14 +34,12 @@ estado = {
     "mensagem": "",
 }
 
-
 def comparar(numeroGerado, numeroFornecido):
     if numeroGerado < numeroFornecido:
         return -1
     if numeroGerado > numeroFornecido:
         return 1
     return 0
-
 
 def iniciarUsuarioAdivinha(estado):
     estado.update({
@@ -60,7 +55,6 @@ def iniciarUsuarioAdivinha(estado):
         "mensagem": f"Tente adivinhar um número entre {MINIMO} e {MAXIMO}.",
     })
 
-
 def iniciarComputadorAdivinha(estado):
     estado.update({
         "papel": "computador",
@@ -74,7 +68,6 @@ def iniciarComputadorAdivinha(estado):
         "vencedor": False,
         "mensagem": f"Pense num número entre {MINIMO} e {MAXIMO}. O computador vai tentar adivinhar.",
     })
-
 
 def tentarNumero(estado):
     if estado["digitado"] == "":
@@ -92,7 +85,6 @@ def tentarNumero(estado):
         estado["mensagem"] = f"Acertou em {estado['tentativas']} tentativa(s)!"
     else:
         estado["mensagem"] = "O número secreto é menor." if estado["feedback"] == -1 else "O número secreto é maior."
-
 
 def responderComputador(estado, feedback):
     if feedback == 0:
@@ -112,17 +104,14 @@ def responderComputador(estado, feedback):
     estado["feedback"] = feedback
     estado["mensagem"] = f"Tentativa {estado['tentativas']}: o computador chuta {estado['palpite']}."
 
-
 def pressionarDigito(estado, caractere):
     if estado["papel"] != "usuario" or estado["vencedor"]:
         return
     if len(estado["digitado"]) < 4:
         estado["digitado"] += caractere
 
-
 def apagarUltimo(estado):
     estado["digitado"] = estado["digitado"][:-1]
-
 
 def desenharBotao(rect, texto, cor=corBotao, fonte=fonteTexto):
     posicaoMouse = pygame.mouse.get_pos()
@@ -131,13 +120,11 @@ def desenharBotao(rect, texto, cor=corBotao, fonte=fonteTexto):
     rotulo = fonte.render(texto, True, corTexto)
     tela.blit(rotulo, rotulo.get_rect(center=rect.center))
 
-
 def desenharMenu():
     tituloRender = fonteTitulo.render("Quem vai adivinhar?", True, corTexto)
     tela.blit(tituloRender, tituloRender.get_rect(center=(largura // 2, 200)))
     desenharBotao(botaoMenuUsuario, "Eu adivinho")
     desenharBotao(botaoMenuComputador, "Computador adivinha")
-
 
 def desenharIndicadorFeedback(feedback):
     if feedback is None:
@@ -149,7 +136,6 @@ def desenharIndicadorFeedback(feedback):
     rotulo = fonteGrande.render(textos[feedback], True, corTexto)
     tela.blit(rotulo, rotulo.get_rect(center=caixa.center))
 
-
 def desenharJogo(estado):
     if estado["papel"] == "usuario":
         titulo = "Você adivinha"
@@ -157,30 +143,23 @@ def desenharJogo(estado):
         titulo = "Computador adivinha"
     tituloRender = fonteTitulo.render(titulo, True, corTexto)
     tela.blit(tituloRender, tituloRender.get_rect(center=(largura // 2, 40)))
-
     mensagemRender = fonteMenor.render(estado["mensagem"], True, corDestaque)
     tela.blit(mensagemRender, mensagemRender.get_rect(center=(largura // 2, 100)))
-
     if estado["papel"] == "usuario":
         digitadoRender = fonteGrande.render(estado["digitado"] or "_", True, corTexto)
         tela.blit(digitadoRender, digitadoRender.get_rect(center=(largura // 2, 200)))
     else:
         palpiteRender = fonteGrande.render(str(estado["palpite"]), True, corTexto)
         tela.blit(palpiteRender, palpiteRender.get_rect(center=(largura // 2, 200)))
-
     desenharIndicadorFeedback(estado["feedback"])
-
     tentativasRender = fonteMenor.render(f"Tentativas: {estado['tentativas']}", True, corTexto)
     tela.blit(tentativasRender, tentativasRender.get_rect(center=(largura // 2, 410)))
-
     if estado["papel"] == "computador" and not estado["vencedor"]:
         desenharBotao(botaoMenor, "-1", corMenor, fonteGrande)
         desenharBotao(botaoAcerto, "0", corAcerto, fonteGrande)
         desenharBotao(botaoMaior, "1", corMaior, fonteGrande)
-
     desenharBotao(botaoTrocarPapel, "Trocar papel")
     desenharBotao(botaoReiniciar, "Reiniciar", corBotaoRemover)
-
 
 def desenharTela(estado):
     tela.fill(corFundo)
@@ -189,8 +168,8 @@ def desenharTela(estado):
     else:
         desenharJogo(estado)
     pygame.display.update()
-
-
+####################################################################################################################################################################################
+####################################################################################################################################################################################
 botaoMenuUsuario = pygame.Rect(largura // 2 - 130, 280, 260, 55)
 botaoMenuComputador = pygame.Rect(largura // 2 - 130, 355, 260, 55)
 botaoMenor = pygame.Rect(20, 470, 140, 50)
@@ -198,9 +177,8 @@ botaoAcerto = pygame.Rect(170, 470, 140, 50)
 botaoMaior = pygame.Rect(320, 470, 140, 50)
 botaoTrocarPapel = pygame.Rect(20, 540, 200, 45)
 botaoReiniciar = pygame.Rect(260, 540, 200, 45)
-
 rodando = True
-
+####################################################################################################################################################################################
 while rodando:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
@@ -241,8 +219,8 @@ while rodando:
                     responderComputador(estado, 0)
                 elif botaoMaior.collidepoint(evento.pos):
                     responderComputador(estado, 1)
-
+####################################################################################################################################################################################
     desenharTela(estado)
     relogio.tick(60)
-
+####################################################################################################################################################################################
 pygame.quit()
