@@ -88,10 +88,6 @@ def desenharEscolhas(estado):
     tela.blit(imagemComputador, imagemComputador.get_rect(center=(3 * largura // 4, 200)))
     rotuloVs = fonteTitulo.render("X", True, corDestaque)
     tela.blit(rotuloVs, rotuloVs.get_rect(center=(largura // 2, 200)))
-    rotuloJogador = fonteMenor.render("Você", True, corTexto)
-    tela.blit(rotuloJogador, rotuloJogador.get_rect(center=(largura // 4, 300)))
-    rotuloComputador = fonteMenor.render("Computador", True, corTexto)
-    tela.blit(rotuloComputador, rotuloComputador.get_rect(center=(3 * largura // 4, 300)))
     mensagem = fonteTexto.render(mensagensDoResultado[estado["resultado"]], True, corDestaque)
     tela.blit(mensagem, mensagem.get_rect(center=(largura // 2, 335)))
 
@@ -101,9 +97,7 @@ def desenharBotoesEscolha(botoes):
         cor = corBotaoHover if rect.collidepoint(posicaoMouse) else corBotao
         pygame.draw.rect(tela, cor, rect, border_radius=12)
         imagem = imagensDosItens[item]
-        tela.blit(imagem, imagem.get_rect(center=(rect.centerx, rect.y + 65)))
-        rotulo = fonteMenor.render(item.capitalize(), True, corTexto)
-        tela.blit(rotulo, rotulo.get_rect(center=(rect.centerx, rect.bottom - 18)))
+        tela.blit(imagem, imagem.get_rect(center=rect.center))
 
 def desenharBotaoReiniciar(rect):
     pygame.draw.rect(tela, corBotaoReiniciar, rect, border_radius=12)
