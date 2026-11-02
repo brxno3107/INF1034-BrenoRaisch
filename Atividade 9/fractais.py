@@ -71,8 +71,6 @@ fonte = pygame.font.SysFont("segoeui,arial", 18)
 PROFUNDIDADE_ARVORE = 8
 PROFUNDIDADE_KOCH = 4
 
-## Desenho inicial (espiral): feito direto aqui, sem função, como pede o enunciado
-tela.fill("#121417")
 centro = (largura // 2, altura // 2)
 tamanho = 260
 angulo = 0
@@ -94,7 +92,6 @@ while rodando:
             rodando = False
         if evento.type == pygame.KEYDOWN:
             if evento.key == pygame.K_1:
-                ## Espiral: desenho direto aqui, sem função (mesma lógica do início)
                 tela.fill("#121417")
                 centro = (largura // 2, altura // 2)
                 tamanho = 260
