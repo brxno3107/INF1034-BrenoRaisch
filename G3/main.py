@@ -47,6 +47,16 @@ vel_max_queda = 1.2
 i_ciclo = 0
 anim_time = 0
 mostrar_colliders = False
+tempo_jogo = 0
+tempo_rewind = 2000
+gravacao = []
+ultima_gravacao = []
+flash_time = 0
+fantasma = []
+for img in frames_esq + frames_dir:
+    copia = img.copy()
+    copia.set_alpha(90)
+    fantasma.append(copia)
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -57,8 +67,14 @@ while True:
                 vel_y = -forca_pulo
             if event.key == pygame.K_F1:
                 mostrar_colliders = not mostrar_colliders
+            if event.key == pygame.K_z and event.mod & pygame.KMOD_CTRL and gravacao:
+                ultima_gravacao = gravacao[:]
+                _, pos_x, pos_y, vel_y, olhando_direita, _ = gravacao[0]
+                gravacao = [gravacao[0]]
+                flash_time = 150
     clock.tick(60)
     dt = min(clock.get_time(), 50)
+    tempo_jogo = tempo_jogo + dt
     keys = pygame.key.get_pressed()
     andando = False
     old_pos_x = pos_x
@@ -97,6 +113,7 @@ while True:
             no_chao = True
     if pos_y > altura_mapa:
         pos_x, pos_y, vel_y = inicio_x, inicio_y, 0
+        gravacao = []
     if not no_chao:
         frame_atual = frame_pulo
     elif andando:
@@ -108,6 +125,9 @@ while True:
     else:
         i_ciclo = 0
         frame_atual = 0
+    gravacao.append((tempo_jogo, pos_x, pos_y, vel_y, olhando_direita, frame_atual))
+    while gravacao[0][0] < tempo_jogo - tempo_rewind:
+        gravacao.pop(0)
     cam_x = pos_x + largura_jogador / 2 - screen.get_width() / 2
     cam_y = pos_y + altura_jogador / 2 - screen.get_height() / 2
     cam_x = max(0, min(cam_x, largura_mapa - screen.get_width()))
@@ -118,11 +138,19 @@ while True:
             letra = mapa[i][j]
             if letra in cortes:
                 screen.blit(tileset, (j * tile_size - cam_x, i * tile_size - cam_y), cortes[letra])
+    _, volta_x, volta_y, _, volta_dir, volta_frame = gravacao[0]
+    screen.blit(fantasma[volta_frame + 4 * volta_dir], (volta_x - cam_x, volta_y - cam_y))
     frames = frames_dir if olhando_direita else frames_esq
     screen.blit(frames[frame_atual], (pos_x - cam_x, pos_y - cam_y))
     if mostrar_colliders:
         for collider in colliders:
             pygame.draw.rect(screen, (0, 0, 255), collider.move(-cam_x, -cam_y), 2)
         pygame.draw.rect(screen, (255, 0, 0), collider_jogador.move(-cam_x, -cam_y), 2)
-    screen.blit(fonte.render("← → andar   ESPAÇO pular   F1 colisões", True, (255, 255, 255)), (12, 8))
+    if flash_time > 0:
+        flash = pygame.Surface(screen.get_size())
+        flash.fill((255, 255, 255))
+        flash.set_alpha(int(180 * flash_time / 150))
+        screen.blit(flash, (0, 0))
+        flash_time = flash_time - dt
+    screen.blit(fonte.render("← → andar   ESPAÇO pular   CTRL+Z desfazer   F1 colisões", True, (255, 255, 255)), (12, 8))
     pygame.display.update()
