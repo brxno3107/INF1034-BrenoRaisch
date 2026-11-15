@@ -16,11 +16,8 @@ cursor_sheet = pygame.transform.scale_by(pygame.image.load("assets/cursor.png"),
 
 def corte(coluna):
     return (coluna * tile_size, 0, tile_size, tile_size)
-#dic de cortes tileset
 cortes = {"[": corte(0), "=": corte(1), "]": corte(2), "#": corte(3), "_": corte(4), "P": corte(5), "e": corte(6)}
 solidos = "[=]#_"
-
-#le fase do txt
 mapa = []
 with open("fases/fase_teste.txt", encoding="utf-8") as arquivo:
     for linha in arquivo:
@@ -28,19 +25,15 @@ with open("fases/fase_teste.txt", encoding="utf-8") as arquivo:
             mapa.append(linha.rstrip("\n"))
 largura_mapa = len(mapa[0]) * tile_size
 altura_mapa = len(mapa) * tile_size
-
-#colliders dos blocos
 colliders = []
 for i in range(len(mapa)):
     for j in range(len(mapa[i])):
         if mapa[i][j] in solidos:
             colliders.append(pygame.Rect(j * tile_size, i * tile_size, tile_size, tile_size))
-
-#player (cursor)
 largura_jogador, altura_jogador = 12 * escala, 17 * escala
 frames_esq = [cursor_sheet.subsurface((largura_jogador * f, 0, largura_jogador, altura_jogador)) for f in range(4)]
 frames_dir = [pygame.transform.flip(img, True, False) for img in frames_esq]
-ciclo_andar = [1, 0, 2, 0] #parado, passo, parado, outro passo
+ciclo_andar = [1, 0, 2, 0]
 frame_pulo = 3
 inicio_x, inicio_y = tile_size, 13 * tile_size - altura_jogador
 pos_x, pos_y = inicio_x, inicio_y
@@ -54,7 +47,6 @@ vel_max_queda = 1.2
 i_ciclo = 0
 anim_time = 0
 mostrar_colliders = False
-
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -67,8 +59,6 @@ while True:
                 mostrar_colliders = not mostrar_colliders
     clock.tick(60)
     dt = min(clock.get_time(), 50)
-
-    #movimento horizontal
     keys = pygame.key.get_pressed()
     andando = False
     old_pos_x = pos_x
@@ -81,8 +71,6 @@ while True:
         olhando_direita = False
         andando = True
     pos_x = max(0, min(pos_x, largura_mapa - largura_jogador))
-
-    #colisao no x (encosta na borda do bloco)
     collider_jogador = pygame.Rect(pos_x, pos_y, largura_jogador, altura_jogador)
     for collider in colliders:
         if collider_jogador.colliderect(collider):
@@ -91,8 +79,6 @@ while True:
             else:
                 pos_x = collider.right
             collider_jogador.x = pos_x
-
-    #gravidade + colisao no y
     vel_y = min(vel_y + gravidade * dt, vel_max_queda)
     pos_y = pos_y + vel_y * dt
     collider_jogador = pygame.Rect(pos_x, pos_y, largura_jogador, altura_jogador)
@@ -104,19 +90,13 @@ while True:
                 pos_y = collider.bottom
             vel_y = 0
             collider_jogador.y = pos_y
-
-    #checa 1px abaixo do pe p/ saber se ta no chao
     pe = collider_jogador.move(0, 1)
     no_chao = False
     for collider in colliders:
         if pe.colliderect(collider):
             no_chao = True
-
-    #caiu do mapa -> volta pro inicio
     if pos_y > altura_mapa:
         pos_x, pos_y, vel_y = inicio_x, inicio_y, 0
-
-    #anim do cursor
     if not no_chao:
         frame_atual = frame_pulo
     elif andando:
@@ -128,14 +108,10 @@ while True:
     else:
         i_ciclo = 0
         frame_atual = 0
-
-    #camera segue o player sem passar da borda do mapa
     cam_x = pos_x + largura_jogador / 2 - screen.get_width() / 2
     cam_y = pos_y + altura_jogador / 2 - screen.get_height() / 2
     cam_x = max(0, min(cam_x, largura_mapa - screen.get_width()))
     cam_y = max(0, min(cam_y, altura_mapa - screen.get_height()))
-
-    #desenho
     screen.fill(cor_desktop)
     for i in range(len(mapa)):
         for j in range(len(mapa[i])):
