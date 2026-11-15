@@ -65,7 +65,36 @@ pygame.draw.circle(t, vermelho, (8, 8), 6)
 pygame.draw.line(t, branco, (5, 5), (10, 10), 2)
 pygame.draw.line(t, branco, (10, 5), (5, 10), 2)
 tiles.append(t)
-tileset = pygame.Surface((16 * len(tiles), 16), pygame.SRCALPHA)
+t = pygame.Surface((16, 16), pygame.SRCALPHA)
+relevo(t, 2, 10, 12, 6)
+pygame.draw.rect(t, vermelho, (6, 12, 4, 2))
+tiles.append(t)
+t = pygame.Surface((16, 16), pygame.SRCALPHA)
+pygame.draw.rect(t, cinza, (2, 13, 12, 3))
+pygame.draw.line(t, preto, (2, 13), (13, 13))
+pygame.draw.line(t, branco, (2, 15), (13, 15))
+pygame.draw.rect(t, (0, 170, 0), (6, 14, 4, 1))
+tiles.append(t)
+def firewall(pontas):
+    t = pygame.Surface((16, 16), pygame.SRCALPHA)
+    t.fill((130, 30, 25))
+    for y in (0, 4, 8, 12):
+        pygame.draw.line(t, (70, 20, 20), (0, y), (15, y))
+        deslocamento = 0 if y % 8 == 0 else 4
+        for x in range(deslocamento, 16, 8):
+            pygame.draw.line(t, (70, 20, 20), (x, y), (x, y + 3))
+    for centro, ponta in zip((2, 8, 13), pontas):
+        pygame.draw.polygon(t, (255, 120, 0), [(centro - 3, 16), (centro, ponta), (centro + 3, 16)])
+        pygame.draw.polygon(t, (255, 220, 60), [(centro - 1, 16), (centro, ponta + 5), (centro + 1, 16)])
+    return t
+tiles.append(firewall((6, 2, 8)))
+t = pygame.Surface((16, 16), pygame.SRCALPHA)
+for k in range(0, 16, 3):
+    for ponto in ((k, 0), (k, 15), (0, k), (15, k)):
+        t.set_at(ponto, (170, 40, 30))
+tiles.append(t)
+tiles.append(firewall((2, 7, 3)))
+tileset =pygame.Surface((16 * len(tiles), 16), pygame.SRCALPHA)
 for i in range(len(tiles)):
     tileset.blit(tiles[i], (16 * i, 0))
 pygame.image.save(tileset, "assets/tileset.png")
