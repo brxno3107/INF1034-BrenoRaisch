@@ -94,6 +94,14 @@ for k in range(0, 16, 3):
         t.set_at(ponto, (170, 40, 30))
 tiles.append(t)
 tiles.append(firewall((2, 7, 3)))
+for cor_disquete in ((90, 90, 90), (0, 0, 170)):
+    t = pygame.Surface((16, 16), pygame.SRCALPHA)
+    pygame.draw.rect(t, cor_disquete, (2, 3, 12, 13))
+    pygame.draw.rect(t, preto, (2, 3, 12, 13), 1)
+    pygame.draw.rect(t, cinza, (5, 3, 6, 4))
+    pygame.draw.rect(t, sombra, (8, 4, 2, 2))
+    pygame.draw.rect(t, branco, (4, 10, 8, 5))
+    tiles.append(t)
 tileset =pygame.Surface((16 * len(tiles), 16), pygame.SRCALPHA)
 for i in range(len(tiles)):
     tileset.blit(tiles[i], (16 * i, 0))
