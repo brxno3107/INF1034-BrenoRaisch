@@ -53,10 +53,18 @@ gravacao = []
 ultima_gravacao = []
 flash_time = 0
 fantasma = []
+frames_copia = []
 for img in frames_esq + frames_dir:
     copia = img.copy()
     copia.set_alpha(90)
     fantasma.append(copia)
+    copia = img.copy()
+    copia.fill((140, 190, 255, 255), special_flags=pygame.BLEND_RGBA_MULT)
+    frames_copia.append(copia)
+copia_gravacao = []
+copia_inicio = 0
+copia_i = 0
+copia_terminou = False
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -72,6 +80,10 @@ while True:
                 _, pos_x, pos_y, vel_y, olhando_direita, _ = gravacao[0]
                 gravacao = [gravacao[0]]
                 flash_time = 150
+                copia_gravacao = ultima_gravacao
+                copia_inicio = tempo_jogo
+                copia_i = 0
+                copia_terminou = False
     clock.tick(60)
     dt = min(clock.get_time(), 50)
     tempo_jogo = tempo_jogo + dt
@@ -128,6 +140,28 @@ while True:
     gravacao.append((tempo_jogo, pos_x, pos_y, vel_y, olhando_direita, frame_atual))
     while gravacao[0][0] < tempo_jogo - tempo_rewind:
         gravacao.pop(0)
+    if copia_gravacao and not copia_terminou:
+        tempo_copia = copia_gravacao[0][0] + tempo_jogo - copia_inicio
+        while copia_i < len(copia_gravacao) - 1 and copia_gravacao[copia_i + 1][0] <= tempo_copia:
+            copia_i = copia_i + 1
+        _, copia_x, copia_y, copia_vel_y, copia_dir, copia_frame = copia_gravacao[copia_i]
+        if copia_i == len(copia_gravacao) - 1:
+            copia_terminou = True
+    elif copia_gravacao:
+        copia_frame = 0
+        copia_vel_y = min(copia_vel_y + gravidade * dt, vel_max_queda)
+        copia_y = copia_y + copia_vel_y * dt
+        collider_copia = pygame.Rect(copia_x, copia_y, largura_jogador, altura_jogador)
+        for collider in colliders:
+            if collider_copia.colliderect(collider):
+                if copia_vel_y > 0:
+                    copia_y = collider.top - altura_jogador
+                else:
+                    copia_y = collider.bottom
+                copia_vel_y = 0
+                collider_copia.y = copia_y
+        if copia_y > altura_mapa:
+            copia_gravacao = []
     cam_x = pos_x + largura_jogador / 2 - screen.get_width() / 2
     cam_y = pos_y + altura_jogador / 2 - screen.get_height() / 2
     cam_x = max(0, min(cam_x, largura_mapa - screen.get_width()))
@@ -140,6 +174,8 @@ while True:
                 screen.blit(tileset, (j * tile_size - cam_x, i * tile_size - cam_y), cortes[letra])
     _, volta_x, volta_y, _, volta_dir, volta_frame = gravacao[0]
     screen.blit(fantasma[volta_frame + 4 * volta_dir], (volta_x - cam_x, volta_y - cam_y))
+    if copia_gravacao:
+        screen.blit(frames_copia[copia_frame + 4 * copia_dir], (copia_x - cam_x, copia_y - cam_y))
     frames = frames_dir if olhando_direita else frames_esq
     screen.blit(frames[frame_atual], (pos_x - cam_x, pos_y - cam_y))
     if mostrar_colliders:
